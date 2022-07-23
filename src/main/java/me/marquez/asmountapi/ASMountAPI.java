@@ -64,6 +64,7 @@ public class ASMountAPI extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         instance = this;
+        getCommand("asmapireload").setExecutor(this);
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> playerMountData.forEach((player, mountData) -> {
             if(!player.isDead()) {
@@ -88,14 +89,17 @@ public class ASMountAPI extends JavaPlugin implements Listener {
 
     private void reload(CommandSender sender) {
         reloadConfig();
-        entityRange = getConfig().getDouble("artifact-distance");
-        sender.sendMessage("§7- §eArtifact Entity Range: §f§l" + entityRange);
+        entityRange = getConfig().getDouble("entity-distance");
+        sender.sendMessage("§7- §eArmorStand Entity view range: §f§l" + entityRange);
     }
 
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command, @NonNull String label, String @NonNull [] args) {
-        reload(sender);
-        return true;
+        if(sender.hasPermission("asmapireload.*")) {
+            reload(sender);
+            return true;
+        }
+        return false;
     }
 
     private void spawnArtifact(Player player, List<Player> players, ASMountData... mountData) {

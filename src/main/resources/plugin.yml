@@ -1,0 +1,7 @@
+name: ArmorStandMountAPI
+main: me.marquez.asmountapi.ASMountAPI
+version: ${version}
+author: DevMarquez
+commands:
+  asmapireload:
+    description: /asmapireload - reload config of ArmorStandMountAPI
