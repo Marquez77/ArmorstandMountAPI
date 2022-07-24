@@ -19,28 +19,22 @@ import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 
-public class ASMountAPI extends JavaPlugin implements Listener {
+public class ASMountAPI extends JavaPlugin {
 
-    private final Map<Player, Map<String, ASMountData>> playerMountData = new HashMap<>();
-    private final Set<Pair<Player, Player>> excludeView = new HashSet<>();
-    private final Map<Player, List<Player>> aroundPlayers = new HashMap<>();
+    protected final Map<Player, Map<String, ASMountData>> playerMountData = new HashMap<>();
+    protected final Set<Pair<Player, Player>> excludeView = new HashSet<>();
+    protected final Map<Player, List<Player>> aroundPlayers = new HashMap<>();
 
     private double entityRange = 30;
 
     @Getter
     private static ASMountAPI instance;
 
-    private List<Player> getAroundPlayers(Player player) {
+    protected List<Player> getAroundPlayers(Player player) {
         List<Player> players = new ArrayList<>();
         players.add(player);
         for(org.bukkit.entity.Entity entity : player.getNearbyEntities(entityRange, entityRange, entityRange)) {
@@ -52,7 +46,7 @@ public class ASMountAPI extends JavaPlugin implements Listener {
         return players;
     }
 
-    private void sendPacketsToPlayers(List<Player> players, Packet<?>... packets) {
+    protected void sendPacketsToPlayers(List<Player> players, Packet<?>... packets) {
         players.forEach(player -> sendPacketsToPlayer(player, packets));
     }
 
@@ -65,7 +59,7 @@ public class ASMountAPI extends JavaPlugin implements Listener {
     public void onEnable() {
         instance = this;
         getCommand("asmapireload").setExecutor(this);
-        getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(new ASMountListener(this), this);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> playerMountData.forEach((player, mountData) -> {
             if(!player.isDead()) {
                 try {
@@ -75,10 +69,10 @@ public class ASMountAPI extends JavaPlugin implements Listener {
                     if(prevAroundPlayers != null) {
                         List<Player> temp = new ArrayList<>(prevAroundPlayers);
                         players.forEach(temp::remove);
-                        if(!temp.isEmpty()) despawnArtifact(temp, mountData.values().toArray(new ASMountData[0]));
+                        if(!temp.isEmpty()) despawnArmorStands(temp, mountData.values().toArray(new ASMountData[0]));
                         prevAroundPlayers.forEach(players::remove);
                     }
-                    if(!players.isEmpty()) spawnArtifact(player, players, mountData.values().toArray(new ASMountData[0]));
+                    if(!players.isEmpty()) spawnArmorStands(player, players, mountData.values().toArray(new ASMountData[0]));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -102,7 +96,7 @@ public class ASMountAPI extends JavaPlugin implements Listener {
         return false;
     }
 
-    private void spawnArtifact(Player player, List<Player> players, ASMountData... mountData) {
+    protected void spawnArmorStands(Player player, List<Player> players, ASMountData... mountData) {
         if(players == null || players.isEmpty()) return;
         List<Packet<?>> packets = new ArrayList<>();
         ServerLevel level = ((CraftWorld)player.getWorld()).getHandle();
@@ -125,7 +119,7 @@ public class ASMountAPI extends JavaPlugin implements Listener {
         sendPacketsToPlayers(players, packets.toArray(new Packet[0]));
     }
 
-    private void despawnArtifact(List<Player> players, ASMountData... mountData) {
+    protected void despawnArmorStands(List<Player> players, ASMountData... mountData) {
         if(players == null || players.isEmpty()) return;
         int[] ids = new int[mountData.length];
         for(int i = 0; i < mountData.length; i++) ids[i] = mountData[i].getArmorStand().getId();
@@ -145,7 +139,7 @@ public class ASMountAPI extends JavaPlugin implements Listener {
         playerMountData.put(player, mountData);
         List<Player> players = getAroundPlayers(player);
         aroundPlayers.put(player, players);
-        spawnArtifact(player, players, data);
+        spawnArmorStands(player, players, data);
     }
 
     public void removeArmorStandMount(Player player, ASMountData data) {
@@ -157,7 +151,7 @@ public class ASMountAPI extends JavaPlugin implements Listener {
             Map<String, ASMountData> mountData = playerMountData.get(player);
             ASMountData data = mountData.remove(name);
             if(data != null) {
-                despawnArtifact(getAroundPlayers(player), data);
+                despawnArmorStands(getAroundPlayers(player), data);
             }
         }
     }
@@ -165,18 +159,18 @@ public class ASMountAPI extends JavaPlugin implements Listener {
     public void hideArmorStandMounts(Player player, Player viewer) {
         excludeView.add(Pair.of(player, viewer));
         if(playerMountData.containsKey(player)) {
-            despawnArtifact(Collections.singletonList(viewer), playerMountData.get(player).values().toArray(new ASMountData[0]));
+            despawnArmorStands(Collections.singletonList(viewer), playerMountData.get(player).values().toArray(new ASMountData[0]));
         }
     }
 
     public void showArtifact(Player player, Player viewer) {
         excludeView.remove(Pair.of(player, viewer));
         if(playerMountData.containsKey(player)) {
-            spawnArtifact(player, Collections.singletonList(viewer), playerMountData.get(player).values().toArray(new ASMountData[0]));
+            spawnArmorStands(player, Collections.singletonList(viewer), playerMountData.get(player).values().toArray(new ASMountData[0]));
         }
     }
 
-    private List<Packet<?>> getRefreshPackets(Player player) {
+    protected List<Packet<?>> getRefreshPackets(Player player) {
         Location loc = player.getLocation();
         byte yaw = (byte)(loc.getYaw() * 256.0f / 360.0f);
         List<ASMountData> mountData = new ArrayList<>(playerMountData.get(player).values());
@@ -193,41 +187,5 @@ public class ASMountAPI extends JavaPlugin implements Listener {
         ClientboundSetPassengersPacket setPassengersPacket = new ClientboundSetPassengersPacket(serverPlayer);
         packets.add(setPassengersPacket);
         return packets;
-    }
-
-    @EventHandler
-    public void onMove(PlayerMoveEvent e) {
-        Player player = e.getPlayer();
-        if(playerMountData.containsKey(player)) {
-            List<Packet<?>> packets = getRefreshPackets(player);
-            sendPacketsToPlayers(getAroundPlayers(player), packets.toArray(new Packet[0]));
-        }
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent e) {
-        Player player = e.getPlayer();
-        if(playerMountData.containsKey(player)) {
-            despawnArtifact(aroundPlayers.get(player), playerMountData.get(player).values().toArray(new ASMountData[0]));
-            playerMountData.remove(player);
-            aroundPlayers.remove(player);
-        }
-    }
-
-    @EventHandler
-    public void onDeath(PlayerDeathEvent e) {
-        Player player = e.getEntity();
-        if(playerMountData.containsKey(player)) {
-            despawnArtifact(aroundPlayers.get(player), playerMountData.get(player).values().toArray(new ASMountData[0]));
-            aroundPlayers.remove(player);
-        }
-    }
-
-    @EventHandler
-    public void onWorldChange(PlayerChangedWorldEvent e) {
-        Player player = e.getPlayer();
-        if(playerMountData.containsKey(player) && !excludeView.contains(Pair.of(player, player))) {
-            spawnArtifact(player, List.of(player), playerMountData.get(player).values().toArray(new ASMountData[0]));
-        }
     }
 }
