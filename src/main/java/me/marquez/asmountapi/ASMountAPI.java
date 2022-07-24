@@ -66,7 +66,7 @@ public class ASMountAPI extends JavaPlugin implements Listener {
         instance = this;
         getCommand("asmapireload").setExecutor(this);
         getServer().getPluginManager().registerEvents(this, this);
-        getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> playerMountData.forEach((player, mountData) -> {
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> playerMountData.forEach((player, mountData) -> {
             if(!player.isDead()) {
                 try {
                     List<Player> prevAroundPlayers = aroundPlayers.getOrDefault(player, null);
@@ -115,8 +115,10 @@ public class ASMountAPI extends JavaPlugin implements Listener {
             as.setPos(x, y, z);
             int id = as.getId();
             ClientboundAddEntityPacket addEntityPacket = new ClientboundAddEntityPacket(as);
+            ClientboundSetEntityDataPacket setEntityDataPacket = new ClientboundSetEntityDataPacket(id, as.getEntityData(), true);
             ClientboundSetEquipmentPacket setEquipmentPacket = new ClientboundSetEquipmentPacket(id, List.of(Pair.of(EquipmentSlot.HEAD, CraftItemStack.asNMSCopy(data.getItem()))));
             packets.add(addEntityPacket);
+            packets.add(setEntityDataPacket);
             packets.add(setEquipmentPacket);
         }
         packets.addAll(getRefreshPackets(player));
@@ -137,7 +139,10 @@ public class ASMountAPI extends JavaPlugin implements Listener {
         armorStand.setInvisible(true);
         armorStand.setMarker(true);
         armorStand.setSmall(data.isSmall());
-        playerMountData.putIfAbsent(player, new HashMap<>()).put(data.getName(), data);
+        data.setArmorStand(armorStand);
+        Map<String, ASMountData> mountData = playerMountData.getOrDefault(player, new HashMap<>());
+        mountData.put(data.getName(), data);
+        playerMountData.put(player, mountData);
         List<Player> players = getAroundPlayers(player);
         aroundPlayers.put(player, players);
         spawnArtifact(player, players, data);
@@ -173,7 +178,6 @@ public class ASMountAPI extends JavaPlugin implements Listener {
 
     private List<Packet<?>> getRefreshPackets(Player player) {
         Location loc = player.getLocation();
-//        byte pitch = (byte)(loc.getPitch() * 256.0f / 360.0f);
         byte yaw = (byte)(loc.getYaw() * 256.0f / 360.0f);
         List<ASMountData> mountData = new ArrayList<>(playerMountData.get(player).values());
         List<Packet<?>> packets = new ArrayList<>();
