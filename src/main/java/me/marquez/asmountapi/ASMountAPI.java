@@ -60,7 +60,7 @@ public class ASMountAPI extends JavaPlugin {
         instance = this;
         getCommand("asmapireload").setExecutor(this);
         getServer().getPluginManager().registerEvents(new ASMountListener(this), this);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> playerMountData.forEach((player, mountData) -> {
+        getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> playerMountData.forEach((player, mountData) -> {
             if(!player.isDead()) {
                 try {
                     List<Player> prevAroundPlayers = aroundPlayers.getOrDefault(player, null);
@@ -135,6 +135,7 @@ public class ASMountAPI extends JavaPlugin {
         armorStand.setSmall(data.isSmall());
         data.setArmorStand(armorStand);
         Map<String, ASMountData> mountData = playerMountData.getOrDefault(player, new HashMap<>());
+        if(mountData.containsKey(data.getName())) removeArmorStandMount(player, data.getName());
         mountData.put(data.getName(), data);
         playerMountData.put(player, mountData);
         List<Player> players = getAroundPlayers(player);
