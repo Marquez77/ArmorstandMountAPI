@@ -1,2 +1,4 @@
 #ArmorStandMountAPI-${version} Config
+
+# 대상의 아머스탠드가 보이는 최대 거리
 entity-distance: 30

@@ -17,8 +17,18 @@ public class ASMountData {
     @NonNull
     private ItemStack item;
     @NonNull
-    private boolean isSmall;
+    private boolean small;
 
     private ArmorStand armorStand;
+
+    /**
+     * 데이터 객체를 생성합니다.
+     *
+     * @param name 아머스탠드 이름
+     * @param item 아머스탠드 머리에 적용되는 아이템
+     */
+    public ASMountData(String name, ItemStack item) {
+        this(name, item, false);
+    }
 
 }
