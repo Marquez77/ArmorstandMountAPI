@@ -6,12 +6,12 @@
 
     <groupId>me.marquez</groupId>
     <artifactId>ArmorstandMountAPI</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <minecraft.version>1.19</minecraft.version>
+        <minecraft.version>1.19.4</minecraft.version>
         <NEXUS-HOST>marsys.kr:10012</NEXUS-HOST>
     </properties>
 

@@ -1,5 +1,5 @@
 name: ArmorStandMountAPI
-main: me.marquez.asmountapi.ASMountAPI
+main: me.marquez.asmountapi.ASMountPlugin
 version: ${version}
 author: DevMarquez
 api-version: 1.19

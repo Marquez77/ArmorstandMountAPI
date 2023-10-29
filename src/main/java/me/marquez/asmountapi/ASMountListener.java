@@ -14,9 +14,9 @@ import java.util.List;
 
 public class ASMountListener implements Listener {
 
-    private final ASMountAPI api;
+    private final ASMountPlugin api;
 
-    protected ASMountListener(ASMountAPI api) {
+    protected ASMountListener(ASMountPlugin api) {
         this.api = api;
     }
 
