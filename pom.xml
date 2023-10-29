@@ -12,7 +12,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <minecraft.version>1.19.4</minecraft.version>
-        <NEXUS-HOST>marsys.kr:10012</NEXUS-HOST>
+        <NEXUS-HOST>nexus.marsys.kr</NEXUS-HOST>
     </properties>
 
     <repositories>
@@ -24,10 +24,10 @@
             <id>mavenCentral</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
-        <repository>
-            <id>nexus</id>
-            <url>http://${NEXUS-HOST}/repository/maven-public/</url>
-        </repository>
+<!--        <repository>-->
+<!--            <id>nexus</id>-->
+<!--            <url>http://${NEXUS-HOST}/repository/maven-public/</url>-->
+<!--        </repository>-->
     </repositories>
 
     <distributionManagement>

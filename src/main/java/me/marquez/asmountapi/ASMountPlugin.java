@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class ASMountPlugin extends JavaPlugin implements ASMountAPI {
 
@@ -64,7 +65,11 @@ public class ASMountPlugin extends JavaPlugin implements ASMountAPI {
             if(!player.isDead()) {
                 try {
                     List<Player> prevAroundPlayers = aroundPlayers.getOrDefault(player, null);
-                    List<Player> players = getAroundPlayers(player);
+                    CompletableFuture<List<Player>> future = new CompletableFuture<>();
+                    getServer().getScheduler().runTask(this, () -> {
+                        future.complete(getAroundPlayers(player));
+                    });
+                    List<Player> players = future.join();
                     aroundPlayers.put(player, new ArrayList<>(players));
                     if(prevAroundPlayers != null) {
                         List<Player> temp = new ArrayList<>(prevAroundPlayers);
