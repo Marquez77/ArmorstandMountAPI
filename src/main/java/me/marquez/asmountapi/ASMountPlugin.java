@@ -158,6 +158,10 @@ public class ASMountPlugin extends JavaPlugin implements ASMountAPI {
             ASMountData data = mountData.remove(name);
             if(data != null) {
                 despawnArmorStands(getAroundPlayers(player), data);
+                if(mountData.isEmpty()) {
+                    playerMountData.remove(player);
+                    aroundPlayers.remove(player);
+                }
             }
         }
     }

@@ -25,7 +25,7 @@ public class ASMountListener implements Listener {
         Player player = e.getPlayer();
         if(api.playerMountData.containsKey(player)) {
             List<Packet<?>> packets = api.getRefreshPackets(player);
-            api.sendPacketsToPlayers(api.getAroundPlayers(player), packets.toArray(new Packet[0]));
+            api.sendPacketsToPlayers(api.getAroundPlayers(player), packets.toArray(Packet[]::new));
         }
     }
 
